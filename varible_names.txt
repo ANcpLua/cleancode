@@ -1,0 +1,12 @@
+result - mapped_failures // list of Failure namedtuples mapped from list of list of strings :)
+regex_test_case - regex_to_find_first_sign // i really love this name now, pretty self explanatory
+test_case_match - first_sign_match // match object to store matche of the first sign in a test case row
+first_sign, name, failure - test_case_first_sign, test_case_name, test_case_failure // now it makes more sense what name, fs and failure we create in a loop
+pattern - regex_to_find_response_time // it was not me who gave this name...
+result - response_time_of_request // we want to extract response time from a request with the above regex
+root - xml_report_root // when building a junit xml report from parsed TestSuites
+time - sum_of_all_response_times // property of root node in report representing how long it took to execute all requests
+suite, case, failure - xml_test_suite_node, xml_test_case_node, xml_failute_node // when iterating over all test suites we build a new test suite/case/failure node in the xml document
+tree - xml_report_tree // finally we build an xml tree from out root
+failures - raw_failures_of_strings // the intent is to show that these failures are not ready failure objects and consists of strings
+tc - azure_telemetry_client // client for publishing telemetery to azure
