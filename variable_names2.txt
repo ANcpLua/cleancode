@@ -31,3 +31,33 @@ then we need to name them simply videoDataFormats.
 
 
 6.2
+
+1) adjazenzMatrix - would be good when we work with graphs and want to show that e.g current 2d array is not just for fun...
+
+2) slowPointer and fastPointer - good names for two variables which a used for problems which can be approached with Floyd's cycle algorithm
+
+3) windowSize - when solving problems with the sliding window pattern we better use this name rather than common k or size
+
+4) bitMask - we could use this name with some adjustments to point out that we will apply it to a bit sequence (name must be not bitSequence or smth else)
+
+
+6.3
+
+1) order_state_data - here we store current state of order(Paid, Pending...)
+
+2) self.__shop_api_url - not just url or api url, because we do all things in context of a webshop
+
+3) private User $userModel - although our model is just called User we add a context to our variable name to emphisize that it represents a model
+
+
+6.4
+
+1) evt - workItemEvent
+
+2) task - getResourceByIdTask
+
+3) _activityPermittedValidation - _permissionsService 
+
+4) sp - serviceProvider
+
+5) span - argumentNameAsSpan
