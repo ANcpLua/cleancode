@@ -1,0 +1,33 @@
+6.1
+
+1) def get_order(self, number: int) -> Order
+
+I think renaming number to order_number would be more precise and represent the right abstraction level.
+As we have an OrderClient class which returns an Order in this method and having a simple "number" even in the params
+may be missleading and just wrong :)
+
+2) response = session.get(link)
+
+In this context we want to fetch a specific resource from the webshop in xml format. Again reponse it too generic.
+I would suggest renaming it to resource_xml_response
+
+3) writer = csv.DictWriter(f, fieldnames=get_orders_fields())
+
+pending_orders_writer would fit the abstraction level better as we perform actions with orders which need to be send
+and with pending orders and just "writer" is too abstract.
+
+4) email = compute_email(orders_to_send)
+
+"orders_dispatch_email" as we are still on pending/orders to send layer and need to operate on orders and everything related to them.
+
+5) var items = JsonConvert.DeserializeObject<VideoFormatData>(File.ReadAllText(file),
+                new JsonSerializerSettings
+                {
+                    MissingMemberHandling = MissingMemberHandling.Ignore
+                });
+
+We are in the YouTubeDataFormatParser class so we are working with video data formats specific to youtube. Items are not our abstraction level. So if we want to read video data formats from a file
+then we need to name them simply videoDataFormats.
+
+
+6.2
