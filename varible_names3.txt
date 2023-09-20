@@ -1,0 +1,69 @@
+7.1
+
+1) value - hasValue
+2) positive - isPositive or hasPassedExam
+3) started - carIsRuning
+4) startGame - gameStarted
+5) gunTrue - gunChosen
+
+7.2
+
+1) commandResult - success or commandSuccess
+2) ordersToSend - foundOrdersToSend
+3) searchReady - searchDone
+
+7.3
+
+I have found a leet code problem (3 Sum) where we can have nested loops:
+
+for i := 0; i < len(nums)-2; i++ {
+		// Skip duplicates of the current number
+		if i > 0 && nums[i] == nums[i-1] {
+			continue
+		}
+		start, end := i+1, len(nums)-1
+		for start < end {
+			currentSum := nums[i] + nums[start] + nums[end]
+        .......
+
+here instead of i for better clariry we could use pivotIndex.
+
+7.4
+
+1) rawImage + convertedToPdfImage - raw at some part of my code could represent a raw image
+and converted is its pdf representation. Initially it was file and pdf. Just using raw und converted would leave us without a context.
+
+2) paid_orders + pending_orders - initially was orders_to_send and pending_orders but making antonyms from them
+makes the actual state difference more precise.
+
+7.5
+
+1)
+def search(key, value, imap_session: imaplib.IMAP4_SSL) -> tuple:
+    result, data = imap_session.search(None, key, '"{}"'.format(value))
+    return data
+
+----------------->
+
+def search(email_property : str, email_address : str, imap_session: imaplib.IMAP4_SSL) -> tuple:
+    search_status, matching_emails = imap_session.search(None, email_property, '"{}"'.format(email_address))
+    return matching_emails if if search_status == 'OK' else tuple()
+
+Gave life to these temp variables...
+
+
+2)
+context = ssl.create_default_context()
+with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+    smtp.login(OFFICE_EMAIL, OFFICE_PASSWORD)
+    smtp.sendmail(OFFICE_EMAIL, email_to_send, em.as_string())
+
+Actually we do not need this context varible as we do not need it further and we can create
+the object directly in SMTP_SSL constructor
+
+with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context()) as smtp:
+    smtp.login(OFFICE_EMAIL, OFFICE_PASSWORD)
+    smtp.sendmail(OFFICE_EMAIL, email_to_send, em.as_string())
+
+Now looks much better. If we would need to configure the context or do some manipulations in advance
+then it would be совсем другая история...
