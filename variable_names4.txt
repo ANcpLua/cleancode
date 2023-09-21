@@ -1,0 +1,15 @@
+1) Sum_Item_Price -> itemPriceSum
+2) Banking_System obj -> BankingSystem bankingSystem
+3) submissionObj -> submission
+4) institutionList -> institutions
+5) _appointmentsRetriever & _appointmentFinder -> the owner of repo where I found it just split search "by Id" and "bulk(retrieving all entities)"
+to two different classes, so it was unclear for me whar two classes with identical names do, it would just make sense
+to use his _appointmentRepository or make one service class but not how it is now...
+6) SnakeItem piece_1, piece_2 -> author of this project probably meant firstPiece and lastPiece
+7) framesAtLoad -> I would add here a suffix at the end because for now it is unclear what timespan they use, it just can not be infered from code...
+8) private ShipMenu shipObj -> shipMenu
+9) NoticeBoardManager nm & var nb = await nm.GetAsync(id) -> in context of current lesson I can say that the names just look similar.
+In context of the whole course they just look awful...
+10) double Input1, Input2 -> in calculator project in will make more sense to make firstOperand and secondOperand
+11) string stringInput -> userInput could sound better, as string gives us nothing again...
+12) Form form = new ItemF(_httpClient, selectedItem.ID); -> itemForm, form is too generic
