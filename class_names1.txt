@@ -1,0 +1,14 @@
+3.1
+
+1) Capitalize -> Capitalizer
+2) GetProfile -> ProfileViewerActivity
+3) CovidInfo -> CovidSpreadDetails
+4) LogClass -> Logger
+5) GeneratePdfClass -> PdfGenerator
+
+3.2
+
+1) ProcessCustomer method in CustomerService and ExecuteOrder method in OrderService -> HandleCustomer and HandleOrder
+2) In one project I found a HasRequirementHandler and AuthService -> I would rename to RequirementsHandler and AuthHandler if we choose handler this time
+3) Creator and ParserFactory -> AbstractFactory and ParserFactory(I do not even know how he can now factory pattern and name an abstract factory "creator")
+4) LoginException & SignUpError - LoginError & SignUpError
