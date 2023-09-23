@@ -1,0 +1,14 @@
+1) registration -> register // method in a UserService class, violates main "verb" rule
+2) viewPosts -> getBlogPosts // method in AdminService, should retrieve all blog posts from the database
+3) addPost -> saveBlogPost // method in same AdminService for saving a new blog post in the database
+4) changeUserStatus -> changeUserAccountStatus // method should activate or deactivate user account's status
+5) extract_order_data -> fetch_components // this method actually fetches order components like customer, content, state from a specific order uri and returns them as dictionary
+I do not know what it does in OrderParser class, it was not me... actually it should be placed to some OrderClient class
+6) parse_resource -> extract_component_data // actually we do not parse a resource as we get data as dict and just accesss extract needed properties from it, omit order in name as we operate it is a method in OrderParser class, which does too many things for now
+(but if we go even further we can eliminate a big switch and just make methods for each component extraction like extract_customer_data and so on)
+7) get_resource_as_dict -> get_xml_resource_as_dict // xml in this context is important as we deal with an api which gives us xml and with a lib return this resource in dict
+8) get_image_from_submission -> extract_images_from_submission // actually we extract a list of images so saying it in single confused even me now although it is my job...
+9) get_reddit_posts -> get_subreddit_posts // we want to fetch all posts from a given subreddit
+10) create_post_resource -> create_post_resource_from_submission // missing object in void method name
+11) find_customers_label -> open_imap_session, find_customers_shipping_label, close_imap_session // initially one method was doing 3 things, and was in no way precise and descriptive
+12) send_email -> send_tracking_email_to_customer, compose_customer_tracking_email // again we have one function with a too general name and doind to many things at once, separating concern to composing an email and sending it makes things easier
