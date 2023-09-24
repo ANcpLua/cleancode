@@ -14,14 +14,15 @@
         this.numOfTicketsBookedByUser = new ArrayList<>();
     }
 
-I would put all parameters data into a separate class for more cohesion and call it CustomerDetails and then create a static factory methos FromDeatils
+I would put all parameters into a separate class for more cohesion, call it CustomerDetails and then create a static factory method FromDeatils
 
 public static Customer FromDetails(CustomerDetails details) {...}
 
 
 2) Position(int x, int y); Position(int x); Position(int y)
 
-During our oop course we had to programm different console games, but this class was everywhere. But now I see how this can be improved
+During our oop course we had to programm different console games and this class was everywhere.
+Now I know how all my overloaded constructors should look like :)
 
 public static Position OnXAxis(int x);
 public static Position OnYAxis(int x);
@@ -37,7 +38,7 @@ public static QueueConnector fromQueue(Queue<T> qnew) would increase readability
 
 1) public interface IFlying
 
-I would rename it either to Flyable to emphisize the ability to fly.
+I would rename it to Flyable to emphisize the ability to fly and not just the action.
 
 
 2) public interface Messageable {
@@ -49,4 +50,4 @@ Messageable is too weird, Communicator seems to be better
 
 3) public interface Cardable {}
 
-I think for a poker game having a Card interface could be more concrete.
+I think for a poker game having a Card interface could be more concise.
