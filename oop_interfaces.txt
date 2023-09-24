@@ -1,0 +1,52 @@
+3.1
+
+1) Customer(String name, String email, String password, String phone, String address, int age) {
+        RandomGenerator random = new RandomGenerator();
+        random.randomIDGen();
+        this.name = name;
+        this.userID = random.getRandomNumber();
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.address = address;
+        this.age = age;
+        this.flightsRegisteredByUser = new ArrayList<>();
+        this.numOfTicketsBookedByUser = new ArrayList<>();
+    }
+
+I would put all parameters data into a separate class for more cohesion and call it CustomerDetails and then create a static factory methos FromDeatils
+
+public static Customer FromDetails(CustomerDetails details) {...}
+
+
+2) Position(int x, int y); Position(int x); Position(int y)
+
+During our oop course we had to programm different console games, but this class was everywhere. But now I see how this can be improved
+
+public static Position OnXAxis(int x);
+public static Position OnYAxis(int x);
+public static Position AtCoordinates(int x);
+
+3) public QueueConnector(Queue<T> qnew);
+
+public static QueueConnector fromQueue(Queue<T> qnew) would increase readability
+
+
+
+3.2
+
+1) public interface IFlying
+
+I would rename it either to Flyable to emphisize the ability to fly.
+
+
+2) public interface Messageable {
+    void sendMessage();
+    String getMessage();
+}
+
+Messageable is too weird, Communicator seems to be better
+
+3) public interface Cardable {}
+
+I think for a poker game having a Card interface could be more concrete.
