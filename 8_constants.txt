@@ -1,0 +1,103 @@
+1) Text.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+   Text.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.gray, java.awt.Color.red));
+
+   jPassword.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+   jPassword.setBorder(javax.swing.BorderFactory.createEtchedBorder(java.awt.Color.gray, java.awt.Color.red));
+
+   back.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
+
+It certainly makes sense to add a FONT_SIZE constant and avoid this 14... The second parameter I would pass not as raw value
+but as a constant defined in the Font class : Font.PLAIN, Font.BOLD, Font.ITALIC.
+Now we can change the font size in one place...
+
+2) if(request.getSession().getAttribute("userID") == null || 
+				(int) request.getSession().getAttribute("access") != 100)
+
+I met this if three times in an admin servlet, so it could be more concise to name this 100 something like ADMIN_ACCESS_LEVEL
+Now if we want to change it we do it at the top of the class and only there.
+
+3) private static final long serialVersionUID = 1L;
+    private static final int usersPerPage = 20;
+
+In the same admin servlet, SERTIAL_VERSION_UID and USERS_PER_PAGE is the corrected version.
+Now it both names conform standards.
+
+4) for (int i = 1; i <= 6; i++) {
+                PreparedStatement statement1 = connection.prepareStatement("DELETE FROM round"+i+" WHERE Institute = ?");
+                statement1.setString(1,InstituteName);
+                if(statement1.executeUpdate() ==0)
+                {
+                    count++;
+                }
+            }
+            return count != 6;
+
+This magic number must definitely be given a name because even after 10 min investigation of person's repo I do not know what it means and why does he
+have tables ending with numbers...
+
+5) final int f_pickCode = 1 -> PICK_CODE
+
+Made conform standards
+
+
+6) YoYo.with(Techniques.Shake)
+                .duration(2000)
+                .repeat(0)
+                .playOn(findViewById(R.id.mainScreenBackImgBtn));
+
+YoYo.with(Techniques.FadeInUp)
+                .duration(2000)
+                .repeat(0)
+                .playOn(findViewById(R.id.SplashScreenLogo));
+
+        YoYo.with(Techniques.FadeIn)
+                .duration(2000)
+                .repeat(0)
+                .playOn(findViewById(R.id.SplashScreenTitle));
+
+        YoYo.with(Techniques.FadeInUp)
+                .duration(2000)
+                .repeat(0)
+                .playOn(findViewById(R.id.SplashScreenSubTitle));
+
+And what if we want to change a delay??? So introducing a delay variable will help us with parametrization!
+
+
+7) String[] fontSizes=new String[30];
+for(int j=0; j<30; j++)
+	fontSizes[j]=new String(10+j*2+"");
+
+For better clarity I would introduce a FONT_SIZES_COUNT constant for better clarity.
+
+8)  this.info = new String[12][12];
+    ....
+    this.res = new String[z][12];
+    ...
+    Scanner input = new Scanner(file);
+	this.res = new String[z][12];
+
+As I understood from the context 12 is a number of columns in a csv file, so CSV_COLUMNS_NUM would be a nice to have
+But much better wold be to use csv mappers...
+
+9) lblId.setBounds(35, 110, 200, 14);
+   ....
+   l9.setBounds(271, 390, 200, 14);
+
+Inbetween there were l* variables with only first two arguments different. So introducing LABEL_WIDTH and LABEL_HEIGHT
+would increase readability and parametrization.
+
+10) public static final int timeout = 3000;
+
+Apart from not capitalized letters I also do not like that there is no specifier after timeout and that it does not emphisize that it is a connection timeout
+
+CONNECTION_TIMEOUT_MS would be okay
+
+11) CookieHelper.CookieSet(httpContext, ControllerName + "pageSizeValue", pageSize.ToString(), 480);
+    //Set this value as the new default if a custom page size has not been set for a controller
+    CookieHelper.CookieSet(httpContext, "DefaultpageSizeValue", pageSize.ToString(), 480);
+            
+Introducing a new COOKIES_EXPIRATION_MINUTES makes it easier to read and maintain
+
+12)  private double costPerNight = 80.00;
+
+private static final NIGHT_COST does not violate the main writing standard and is just more concise.
