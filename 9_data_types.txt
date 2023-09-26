@@ -1,7 +1,8 @@
 1) if (cookieFile.Trim() == "0" || string.IsNullOrEmpty(cookieFile.Trim()))
 
 Here I would introduce a new bool variable isEmptyCookie and assign to it this expression inside if.
-Doing this way we can increase program readability .
+
+Outcome : By doing this way we can improve program readability .
 
 bool isEmptyCookie = cookieFile.Trim() == "0" || string.IsNullOrEmpty(cookieFile.Trim());
 
@@ -25,6 +26,8 @@ or
 
 STMPAuthenticator auth = new STMPAuthenticator("");
 
+Outcome : By doing this way we avoid unneccesary type casts and increase readability.
+
 3) ArrayList<Object> temp = skillsDao.selectAll();
    ArrayList<Skill> s = new ArrayList<Skill>();
 		
@@ -34,7 +37,9 @@ STMPAuthenticator auth = new STMPAuthenticator("");
    }
 
 Returning Object from a method in most cases indicates bad types system. Like we see here : we return a list of objects and then have to cast it to a Skill type.
-I would rework selectAll() method and return a List of ready Skill objects. This would increase robustness of the program by making it type safe and as a bonus also its logic.
+I would rework selectAll() method and return a List of ready Skill objects.
+
+Outcome : By doing this we would increase robustness of the program by making it type safe and as a bonus also improve its logic.
 
 
 4) public abstract double GrossEarnings { get; }
@@ -44,6 +49,7 @@ I would rework selectAll() method and return a List of ready Skill objects. This
 When working with financial operations it could make sense to use BigDecimal which offers methods for presice manipulations.
 Maybe it could be the case here as well.
 
+Outcome : By using BigDecimal we improve our calculations precision.
 
 5) if(uid.equals("admin") && pass.equals("admin"))
 
@@ -61,12 +67,15 @@ Missing check for possible null division or even negative values(scale can not b
 
 if (drawableWidth < 0 || drawableHeight < 0) {...}
 
+Outcome : By adding this if check we ensure that we have one potential error less in our runtime.
+
 7) float[] mTempStartValues = new float[9];
 
    float[] mTempEndValues = new float[9];
 
-Also example from previous repo : does not use double for better precision. Solution - use double :)
+Also example from previous repo : does not use float for better precision. Solution - use double :)
 
+Outcome : By using double we increase floating point calculations precision.
 
 8) if (user != null &&
     user.isAuthenticated() &&
@@ -79,6 +88,7 @@ Also example from previous repo : does not use double for better precision. Solu
 Scary if found on the Internet. But if we simply add two boolean variables : isUserAuthorized and isOrderProcessable
 then we again improve readability and can easier understand the point of both bool values when it comes to changes.
 
+Outcome : Self explanatory - maintainance and readability.
 
 9) if ( $shake_error_codes && $wp_error->has_errors() && in_array( $wp_error->get_error_code(), $shake_error_codes, true ) ) {
 		add_action( 'login_footer', 'wp_shake_js', 12 );
@@ -92,6 +102,8 @@ Now we have a context that if an error is found the form is shaken.
 
 if ($errorCodeFound) add_action(...)
 
+Outcome : maintainance and readability increase + provide context.
+
 10) public void Payment(double price, int idx)
     {
         var convertedPrice = price / idx;
@@ -101,6 +113,8 @@ if ($errorCodeFound) add_action(...)
 No check for potential idx 0 value and negative values. Add an if before division and optionaly throw an exception or add a default value
 
 if (idx < 0) { do smth. }
+
+Outcome : By adding this if check we ensure that we have one potential error less in our runtime. And also avoid logic errors as proces can not be negative.
 
 11) sum.Value = addend1 + addend2;
     difference.Value = minuend - subtrahend;
@@ -112,8 +126,11 @@ Add check before division to avoid pure null division.
 
 if (divisor == 0) throw ....;
 
+Outcome : By adding this if check we ensure that we have one potential error less in our runtime.
 
 12)  if (bp.GetDepositAddress(((BTCPayNetwork)_btcPayNetworkProvider.GetNetwork(paymentMethodId.CryptoCode)).NBitcoinNetwork) is BitcoinAddress)
 
 Although the type cast is pretty straightforward here this long if is hard on the eyes. And it is also not clear right after looking at the expression what this chain actually does.
 So isBitcoinWallet or isBitcoinAddress can introduce the context.
+
+Outcome : maintainance and readability increase + provide context.
