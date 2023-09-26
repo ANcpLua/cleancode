@@ -32,7 +32,7 @@ Now it both names conform standards.
             }
             return count != 6;
 
-This magic number must definitely be given a name because even after 10 min investigation of person's repo I do not know what it means and why does he
+This magic number must definitely be given a name because even after 10 min investigation of the person's repo I do not know what it means and why does he
 have tables ending with numbers...
 
 5) final int f_pickCode = 1 -> PICK_CODE
@@ -67,7 +67,7 @@ And what if we want to change a delay??? So introducing a delay variable will he
 for(int j=0; j<30; j++)
 	fontSizes[j]=new String(10+j*2+"");
 
-For better clarity I would introduce a FONT_SIZES_COUNT constant for better clarity.
+For better clarity I would introduce a FONT_SIZES_COUNT constant.
 
 8)  this.info = new String[12][12];
     ....
