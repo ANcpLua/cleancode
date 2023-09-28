@@ -1,0 +1,397 @@
+1)
+... beginning of file
+reddit = praw.Reddit(...)
+.... code
+def get_reddit_posts(subreddit: str, limit: int) -> List[PostResource]:
+    try:
+        posts = reddit.subreddit(subreddit).hot(limit=limit)
+
+ |
+ |
+ v
+
+def get_reddit_posts(subreddit: str, limit: int) -> List[PostResource]:
+    try:
+        reddit_client = praw.Reddit(....)       
+        subreddit_posts = reddit.subreddit(subreddit).hot(limit=limit)
+
+Moved initialization of reddit_client exactly before its use.
+
+Outcome : increased readability and logic as we need this client onlyt in one line.
+
+2)
+
+do {
+    $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+
+	// Discard irrelevant bits.
+	$rnd = $rnd & $filter;
+
+} while ($rnd >= $range);
+
+ |
+ |
+ v
+
+$rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+do {
+	$rnd = $rnd & $filter;
+} while ($rnd >= $range);
+
+Moved declaration and initialization of a loop variable to exactly before loop.
+
+Outcome : increased readability as it confused even me although this is my code...
+
+3)
+
+$range = ($max - $min);
+
+if ($range < 0) {
+    // Not so random...
+    return $min;
+}
+$log = log($range, 2);
+// Length in bytes
+$bytes = (int) ($log / 8) + 1;
+
+ |
+ |
+ v
+
+$range = ($max - $min);
+
+assert($range >= 0, "Range should be non-negative.");
+
+$log = log($range, 2);
+// Length in bytes
+$bytes = (int) ($log / 8) + 1;
+
+I would remove this if because obviously it is a logic error in the app if the range is negative. And for elimination
+of the error we can use assert() and catch all logic error during development.
+
+Outcome : no logic errors.
+
+4)
+
+orders_to_send = list(filter(lambda order: order.order_state in PAID, new_orders_list))
+... a lot of code
+return orders_with_weights(orders_to_send)
+
+ |
+ |
+ v
+
+... a lot of code
+orders_to_send = list(filter(lambda order: order.order_state in PAID, new_orders))
+return add_weights_to_orders(orders_to_send)
+
+Again move variable to the place where it is first used. And at the same time improve mehtod and variable names.
+
+Outcome : improved readability.
+
+5) 
+
+def proceed_pending_orders(orders_client: PrestaShopOrderClient) -> List or List[Order]:
+    updated, remaining = [], []
+    with open("resources/pending_orders.csv", "r", encoding='utf-8') as f:
+        reader = csv.DictReader(f, fieldnames=get_orders_fields())
+        for old_state_order in reader:
+            try:
+                new_state_order = orders_client.get_order(int(Order(**old_state_order).id))
+            except prestashop_orders_client.exceptions.PrestaShopConnectionError:
+                logger.exception("Authentication failed")
+            if new_state_order.order_state in PAID:
+                updated.append(new_state_order)
+            else:
+                remaining.append(old_state_order)
+    return updated, remaining
+
+I see that this function does 10000 things but if we concentrate on our topic then we see that updated and remaining are declared and initialized
+at the top of this function, but are used somewhere in the loop. I would rework the approach and introduce a new function for retrieving all orders from pending file
+and then iterate over them and do what we do. And also use sets, because we actually do not need the remaining variable.
+
+ |
+ |
+ v
+
+def ...
+    pending_orders = read_pending_orders_from_file()
+    updated_orders = set()
+    for pending_order in pending_orders:
+        try:
+            new_state_order = orders_client.get_order(int(Order(**old_state_order).id))
+        except prestashop_orders_client.exceptions.PrestaShopConnectionError:
+             logger.exception("Authentication failed")
+        if new_state_order.order_state in PAID: updated.append(new_state_order)
+    return updated_orders, pending_orders - updated_orders
+
+
+Outcome : Reduce method length and nested structure + ease understanding.
+
+6)
+
+... top of file
+logger = logging.getLogger("tracker")
+logger.setLevel(logging.INFO)
+log_format = logging.Formatter(u'%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(lineno)d - %(message)s')
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(log_format)
+console_handler.setLevel(logging.INFO)
+logger.addHandler(console_handler)
+...
+
+I would move all logger configurations to a separate file as it looks really ugly... Because logger can be used after 100 lines in code
+but we already mentioned it there. Wo constants that's obviously not the case.
+
+Outcome : reduced code amount and end up only in logger initialization which is okay
+
+7)
+
+...
+typ, email_parts = imap_session.fetch(email_id, '(RFC822)')
+email_body = email_parts[0][1]
+...
+
+ |
+ |
+ v
+
+_, email_parts = imap_session.fetch(email_id, '(RFC822)')
+email_body = email_parts[0][1]
+....
+
+After a short investigation it turned out that we do not need the typ variable at all, so just omit it.
+
+Outcome : less confusion in code
+
+8) 
+
+ShippingInfo = namedtuple("ShippingInfo", "company tracking link")
+company, tracking, link = "", "", ""
+if re.search(SHIPPING_COMPANY_DETAILS['KURIER']['verify_pattern'], label):
+    company = "KURIER"
+elif re.search(SHIPPING_COMPANY_DETAILS['TNT']['verify_pattern'], label):
+    company = "TNT"
+match company:
+    case "TNT":
+        tracking = re.search(SHIPPING_COMPANY_DETAILS['TNT']['tracking_pattern'], label).group(1)
+        link = SHIPPING_COMPANY_DETAILS['TNT']['link']
+    case "KURIER":
+        tracking = re.search(SHIPPING_COMPANY_DETAILS['KURIER']['tracking_pattern'], label).group(1)
+        link = SHIPPING_COMPANY_DETAILS['KURIER']['link']
+result = ShippingInfo(company, tracking, link)
+
+ |
+ |
+ v
+
+ShippingInfo = namedtuple("ShippingInfo", "company tracking link")
+
+if re.search(SHIPPING_COMPANY_DETAILS['KURIER']['verify_pattern'], label):
+    company = "KURIER"
+elif re.search(SHIPPING_COMPANY_DETAILS['TNT']['verify_pattern'], label):
+    company = "TNT"
+else:
+    company = "UNKNOWN"
+
+match company:
+    case "TNT":
+        tracking = re.search(SHIPPING_COMPANY_DETAILS['TNT']['tracking_pattern'], label).group(1)
+        link = SHIPPING_COMPANY_DETAILS['TNT']['link']
+    case "KURIER":
+        tracking = re.search(SHIPPING_COMPANY_DETAILS['KURIER']['tracking_pattern'], label).group(1)
+        link = SHIPPING_COMPANY_DETAILS['KURIER']['link']
+    case _:
+        tracking, link = "UNKNOWN", "UNKNOWN"
+
+Now I added a default case when there is no match as I think this is the ideomatic the to do in python. But apart from python
+I just deleted the declaration of link and tracking variable at the beginning of the function. As we actually need them
+in match and not in first ifs. But honestly I would somehow rewrite the whole logic...
+
+Outcome : increase readability
+
+9)
+
+...
+logger.info(f"Started sending email for {order}")
+email_text = f'Dear {order.first_name},\n\n' \
+             f'....'
+try:
+    em = EmailMessage()
+    em['From'], em['To'], em['Subject'] = OFFICE_EMAIL, email_to_send, "Levus parcel tracking"
+    em.set_content(email_text)
+    ...
+...
+
+ |
+ |
+ v
+
+try:
+    em = EmailMessage()
+    em['From'], em['To'], em['Subject'] = OFFICE_EMAIL, email_to_send, "Levus parcel tracking"
+    email_text = f'Dear {order.first_name},\n\n' \
+             f'....'
+    em.set_content(email_text)
+
+Again the core princip if this lesson is violated. Now it even makes more sense... I do not know why I placed message at the beginning.
+
+Outcome : now function flow makes more sense.
+
+10)
+
+$token = '';
+
+for ($i = 0; $i < $length; $i++) {
+    $randomKey = $this->getRandomInteger(0, $this->alphabetLength);
+    $token .= $this->alphabet[$randomKey];
+}
+
+ |
+ |
+ v
+
+$token = '';
+$randomKey = $this->getRandomInteger(0, $this->alphabetLength);
+for ($i = 0; $i < $length; $i++) {
+    $token .= $this->alphabet[$randomKey];
+}
+
+It does not make sense to declare and initialize the same varible in loop. All variables used in loop must be declared
+and initialized before it.
+
+
+11)
+
+var e = (IHasInvoiceId)evt;
+var severity = InvoiceEventData.EventSeverity.Info;
+if (evt is InvoiceIPNEvent ipn)
+{
+    severity = string.IsNullOrEmpty(ipn.Error) ? InvoiceEventData.EventSeverity.Success
+                                               : InvoiceEventData.EventSeverity.Error;
+}
+await _invoiceRepository.AddInvoiceEvent(e.InvoiceId, e, severity);
+
+ |
+ |
+ v
+
+var severity = InvoiceEventData.EventSeverity.Info;
+if (evt is InvoiceIPNEvent ipn)
+{
+    severity = string.IsNullOrEmpty(ipn.Error) ? InvoiceEventData.EventSeverity.Success
+                                               : InvoiceEventData.EventSeverity.Error;
+}
+var e = (IHasInvoiceId)evt;
+await _invoiceRepository.AddInvoiceEvent(e.InvoiceId, e, severity);
+
+
+Apart from this ugly cast from object to event(maybe introducing some AvstractBase event could help) e i not used directly after declaration.
+30 points form Griffindor.
+
+12)
+
+77 List<Record> rescheduled = new List<Record>();
+78 List<Record> broadcasted = new List<Record>();
+... use of broadcasted and other code
+105 (needReschedule ? rescheduled : broadcasted).Add(scheduled[i]);
+
+Obviously we need to move rescheduled nearer to its first use.
+
+ |
+ |
+ v
+
+List<Record> rescheduled = new List<Record>();
+for (int i = 0; i < scheduled.Count; i++)
+{
+    var needReschedule = await broadcasts[i];
+    (needReschedule ? rescheduled : broadcasted).Add(scheduled[i]);
+}
+
+13)
+
+public static bool TryParse(string str, out Torrc value)
+{
+    value = null;
+    ... code
+    value = new Torrc() { ServiceDirectories = serviceDirectories };
+    return true;
+}
+
+It could make sense to assign null to value if we want to point out that we ended working with an object, but in this case we
+only start working with it, so I would delete it, as it only confuses.
+
+Outcome : redice confusing.
+
+14)
+
+var network = NetworkProvider.GetNetwork<BTCPayNetwork>(transactionEvent.CryptoCode);
+var derivation = transactionEvent.NewTransactionEvent.DerivationStrategy;
+if (network is null || derivation is null)
+    break;
+var txHash = transactionEvent.NewTransactionEvent.TransactionData.TransactionHash.ToString();
+... code which extensively uses network and derivation
+... rest which does not use it
+
+ |
+ |
+ v
+
+var network = NetworkProvider.GetNetwork<BTCPayNetwork>(transactionEvent.CryptoCode);
+var derivation = transactionEvent.NewTransactionEvent.DerivationStrategy;
+if (network is null || derivation is null)
+    break;
+var txHash = transactionEvent.NewTransactionEvent.TransactionData.TransactionHash.ToString();
+... code which extensively uses network and derivation
+network = null
+derivation = null
+... rest which does not use it
+
+So we can mark that we ended using network and derivation and that we do not use it further.
+
+Outcome : increased readability.
+
+15)
+
+def orders_with_weights(orders: List[Order]) -> Dict[Order, List[tuple]]:
+    # Connect to MySQL database
+    conn = mysql.connector.connect(
+        host="localhost",
+        user=DB_USER,
+        password=DB_PASSWD,
+        database=DB_SCHEMA
+    )
+    ... other code
+
+ |
+ |
+ v
+
+def orders_with_weights(orders: List[Order]) -> Dict[Order, List[tuple]]:
+    assert DB_USER and DB_PASSWD and DB_SCHEMA, "Database credentials and schema must be non-empty strings."
+    
+    # Connect to MySQL database
+    conn = mysql.connector.connect(
+        host="localhost",
+        user=DB_USER,
+        password=DB_PASSWD,
+        database=DB_SCHEMA
+    )
+    # ... rest of the function remains unchanged
+
+We can add an invariant for development that our credentials are not empty and make sure that we take care of adding them
+to env variables.
+
+Outcome : reducing potential investigation time if this type of COMMON error occures.
+
+
+
+
+
+
+
+
+
+
