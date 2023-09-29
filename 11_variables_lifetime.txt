@@ -1,0 +1,140 @@
+1)
+
+@InterfaceAudience.Private
+public class CryptoStreamUtils {
+  private static final int MIN_BUFFER_SIZE = 512;
+  private static final Logger LOG =
+      LoggerFactory.getLogger(CryptoStreamUtils.class);
+  .... other methods
+  public static int checkBufferSize(CryptoCodec codec, int bufferSize) {
+    Preconditions.checkArgument(bufferSize >= MIN_BUFFER_SIZE, 
+        "Minimum value of buffer size is " + MIN_BUFFER_SIZE + ".");
+    return bufferSize - bufferSize % codec.getCipherSuite()
+        .getAlgorithmBlockSize();
+  }
+  ...other methods
+
+Here we can limit the scope of MIN_BUFFER_SIZE to just a local variable as we need it only in one method.
+We can make it also final there:
+
+ |
+ |
+ v
+
+public static int checkBufferSize(CryptoCodec codec, int bufferSize) {
+    final int MIN_BUFFER_SIZE = 512;
+    Preconditions.checkArgument(bufferSize >= MIN_BUFFER_SIZE, 
+        "Minimum value of buffer size is " + MIN_BUFFER_SIZE + ".");
+    return bufferSize - bufferSize % codec.getCipherSuite()
+        .getAlgorithmBlockSize();
+  }
+
+Outcome : limited scope of a variable and made it method specific.
+
+2)
+
+private ScheduledExecutorService delayExecutor =
+    Executors.newScheduledThreadPool(1,
+        new ThreadFactoryBuilder().setDaemon(true)
+            .setNameFormat("ZKFC Delay timer #%d")
+            .build());
+
+A really costly object resides on a class level but is used again only in one method :
+
+private void scheduleRecheck(long whenNanos) {
+    delayExecutor.schedule(...)
+...
+}
+
+ |
+ |
+ v
+
+private void scheduleRecheck(long whenNanos) {
+    var delayExecutor = Executors.newScheduledThreadPool(1,
+        new ThreadFactoryBuilder().setDaemon(true)
+            .setNameFormat("ZKFC Delay timer #%d")
+            .build());
+    delayExecutor.schedule(...)
+...
+}
+
+Outcome : use expensive object only where we need it.
+
+3)
+
+public static final Logger LOG =
+      LoggerFactory.getLogger(ActiveStandbyElector.class);
+
+No need for making logger public, limit its scope to private.
+
+ |
+ |
+ v
+
+private static final Logger LOG =
+      LoggerFactory.getLogger(ActiveStandbyElector.class);
+
+4)
+...
+// delta = handler + processing + response
+long completionTimeNanos = Time.monotonicNowNanos();
+long deltaNanos = completionTimeNanos - processingStartTimeNanos;
+long arrivalTimeNanos = call.timestampNanos;
+
+ProcessingDetails details = call.getProcessingDetails();
+// queue time is the delta between when the call first arrived and when it
+// began being serviced, minus the time it took to be put into the queue
+details.set(Timing.QUEUE,
+        processingStartTimeNanos - arrivalTimeNanos - details.get(Timing.ENQUEUE));
+deltaNanos -= details.get(Timing.PROCESSING);
+deltaNanos -= details.get(Timing.RESPONSE);
+details.set(Timing.HANDLER, deltaNanos);
+...
+
+Was really confusing to understand firstly the operations are handled in haphazard manner. But then I go it, this is exactly
+a violation of the second rule from the lesson. So we just need to group all manipulations with Nanos in one method
+and it will be much much cleaner...
+
+ |
+ |
+ v
+
+public static void processQueueAndHandlerMetrics(Call call, long processingStartTimeNanos, ProcessingDetails details) {
+    // delta = handler + processing + response
+    long completionTimeNanos = Time.monotonicNowNanos();
+    long deltaNanos = completionTimeNanos - processingStartTimeNanos;
+    deltaNanos -= details.get(Timing.PROCESSING);
+    deltaNanos -= details.get(Timing.RESPONSE);
+    details.set(Timing.HANDLER, deltaNanos);
+
+    long arrivalTimeNanos = call.timestampNanos;
+    details.set(Timing.QUEUE,
+        processingStartTimeNanos - arrivalTimeNanos - details.get(Timing.ENQUEUE));
+}
+
+5)
+
+int count = -1;
+if (dataLengthBuffer.remaining() > 0) {
+    count = channelRead(channel, dataLengthBuffer);       
+    if (count < 0 || dataLengthBuffer.remaining() > 0) 
+        return count;
+     }
+... count is used in next 3 ifs in same manner
+
+I would refer to our first rule : limiting variable scope as much as possible and limit the scope of count to just
+an if block scope. As for now it is being changed 100 times in between. Ideally the whole method should be refactores
+but we can stop for now on if scope limitation.
+
+ |
+ |
+ v
+
+if (dataLengthBuffer.remaining() > 0) {
+    int bytesReadToBuffer = channelRead(channel, dataLengthBuffer);       
+    if (bytesReadToBuffer < 0 || dataLengthBuffer.remaining() > 0) 
+        return bytesReadToBuffer;
+     }
+
+6) 
