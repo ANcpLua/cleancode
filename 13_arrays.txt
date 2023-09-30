@@ -1,0 +1,87 @@
+1)
+
+nt count = response.body().getKids().size();
+
+mSpinnerList = new ArrayList<KidSpinnerHolder>(count);
+
+for (int i = 0; i < count; i++) {
+    String name = response.body().getKids().get(i).getKid().getName();
+    int id = response.body().getKids().get(i).getKid().getId();
+    names[i] = name;
+    mSpinnerList.add(new KidSpinnerHolder(id, name));
+}
+
+Actually here we can replace raw strings array with LinkedList as from the provided logic we just want
+to append to the end and linked list is good for that purpose.
+
+List<String> names = new LinkedList<String>;
+...
+names.add(name)
+
+2)
+
+private static final String[] studentIds = new String[MAX_STUDENTS]; // Array to store student IDs
+private static final String[] studentNames = new String[MAX_STUDENTS]; // Array to store student names
+private static final int[][] studentMarks = new int[MAX_STUDENTS][2]; // Array to store student marks
+private static int studentCount = 0; // Current number of students
+
+Author of this project could use a simple hashset instead and save every student using its id as key.
+Just override hashcode method and return student's id.He would also need to create a separate data structure
+for a student.
+
+private final Set<Student> students = new HashSet<Student>();
+...
+class Student {
+    private final String id;
+    ...
+}
+
+3)
+
+int[] guesses = new int[99];
+Scanner sc = new Scanner(System.in);
+int numberOfTries = 0;
+boolean flag = true;
+
+while (flag) {
+    System.out.print("Guess the number: ");
+    int guess = sc.nextInt();
+    Arrays.sort(guesses);
+    ...
+    guesses[numberOfTries] = guess;
+    numberOfTries++;
+    
+Even in this small game we see a dangerous error - favourite out of bound exception. The guy could create a custom OrderedArray
+class but even without such effort simple use of ArrayList which can be used with Array.sort and binary search AND
+just using add on place of direct index access will prevent us from error. Because if number of tries becomes 100,
+and as I see there is no check for that we get an uncaught exception.
+
+4)
+
+ int[] arrOfint = new int[500];
+ JCheckBox[] cb= new JCheckBox[100];
+ ...
+ int j=1;
+ while(rs1.next()){
+    arrOfint[j]=rs1.getInt("id");
+    ...
+    cb[j].setPreferredSize(new Dimension(758,326));*/
+    jpan.add(cb[j]);
+    jpan.add(jLabels);
+    j++;
+}
+
+Here we see another problem - first element remains untouched, because assignment starts with index #1. And the logic
+here is pretty straightforward, we need both arrays for just storing items appending them to the end.
+Use Dequeue!
+
+5)
+
+class EmployeeManager {
+    private String[] employeeNames = new String[100];
+    private int[] employeeIds = new int[100];
+    private int count = 0;
+    
+Again we see limitations in terms of array size and potential index access problems. Solution - use HashMap!
+
+private Map<Integer, String> employees = new HashMap<>();
