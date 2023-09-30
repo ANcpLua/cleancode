@@ -137,4 +137,274 @@ if (dataLengthBuffer.remaining() > 0) {
         return bytesReadToBuffer;
      }
 
-6) 
+6)
+Entry<AsyncLogger, PrepareRecoveryResponseProto> bestEntry = Collections.max(
+    prepareResponses.entrySet(), SegmentRecoveryComparator.INSTANCE);
+AsyncLogger bestLogger = bestEntry.getKey();
+PrepareRecoveryResponseProto bestResponse = bestEntry.getValue();
+
+// Log the above decision, check invariants.
+if (bestResponse.hasAcceptedInEpoch()) {
+LOG.info("Using already-accepted recovery for segment " +
+    "starting at txid " + segmentTxId + ": " +
+    bestEntry);
+} else if (bestResponse.hasSegmentState()) {
+    LOG.info("Using longest log: " + bestEntry);
+} else {
+ for (PrepareRecoveryResponseProto resp : prepareResponses.values()) {
+    assert !resp.hasSegmentState() :
+    "One of the loggers had a response, but no best logger " +
+    "was found.";
+ }
+ ... a lot of code
+ SegmentStateProto logToSync = bestResponse.getSegmentState();
+ ... even more code
+ URL syncFromUrl = bestLogger.buildURLToFetchLogs(segmentTxId);
+
+ So we can pack the first part into a separate method and return Entry<AsyncLogger, PrepareRecoveryResponseProto> and somehow group subsequent calls
+ so that we do not stretch the window.
+
+ |
+ |
+ v
+
+ private Entry<AsyncLogger, PrepareRecoveryResponseProto> determineBestLoggerAndResponse(...prepareResponses) {
+    var bestEntry = Collections.max(
+            prepareResponses.entrySet(), SegmentRecoveryComparator.INSTANCE);
+    ...logic above
+    return bestEntry
+}
+
+var bestEntry = determineBestLoggerAndResponse(prepareResponses);
+SegmentStateProto logToSync = bestEntry.getKey().getSegmentState();
+URL syncFromUrl = bestEntry.getValue().buildURLToFetchLogs(segmentTxId);
+... another function call where we pass all derived parameters.
+
+7)
+    @Override
+    public ParquetValueReader<?> struct(
+        Types.StructType expected, GroupType struct, List<ParquetValueReader<?>> fieldReaders) {
+      Schema avroSchema = avroSchemas.get(expected);
+
+      // match the expected struct's order
+      Map<Integer, ParquetValueReader<?>> readersById = Maps.newHashMap();
+      Map<Integer, Type> typesById = Maps.newHashMap();
+      List<Type> fields = struct.getFields();
+      for (int i = 0; i < fields.size(); i += 1) {
+        Type fieldType = fields.get(i);
+        int fieldD = type.getMaxDefinitionLevel(path(fieldType.getName())) - 1;
+        int id = fieldType.getId().intValue();
+        readersById.put(id, ParquetValueReaders.option(fieldType, fieldD, fieldReaders.get(i)));
+        typesById.put(id, fieldType);
+      }
+
+      List<Types.NestedField> expectedFields =
+          expected != null ? expected.fields() : ImmutableList.of();
+      List<ParquetValueReader<?>> reorderedFields =
+          Lists.newArrayListWithExpectedSize(expectedFields.size());
+      List<Type> types = Lists.newArrayListWithExpectedSize(expectedFields.size());
+      for (Types.NestedField field : expectedFields) {
+        int id = field.fieldId();
+        ParquetValueReader<?> reader = readersById.get(id);
+        if (reader != null) {
+          reorderedFields.add(reader);
+          types.add(typesById.get(id));
+        } else {
+          reorderedFields.add(ParquetValueReaders.nulls());
+          types.add(null);
+        }
+      }
+
+      return new RecordReader(types, reorderedFields, avroSchema);
+    }
+
+A huge method isn't it? A huge windows between readersById and typesById initialization and last access. Split!
+
+ |
+ |
+ v
+
+private void initializeReadersAndTypes(struct, fieldReadersm, readersById, typesById) {
+    ... above logic with their initiolizing
+}
+
+private ParquetValueReader<?> reorderAndCreateRecordReader(..) {
+    ...
+    return new RecordReader()
+}
+
+And intial long method becomes short and elegant :
+
+    @Override
+    public ParquetValueReader<?> struct(
+        Types.StructType expected, GroupType struct, List<ParquetValueReader<?>> fieldReaders) {
+      Schema avroSchema = avroSchemas.get(expected);
+      Map<Integer, ParquetValueReader<?>> readersById = Maps.newHashMap();
+      Map<Integer, Type> typesById = Maps.newHashMap();
+
+      initializeReadersAndTypes(struct, fieldReaders, readersById, typesById);
+
+     return reorderAndCreateRecordReader(expected, readersById, typesById, avroSchema);
+     }
+
+8)
+
+public class ParquetMetricsRowGroupFilter {
+  private static final int IN_PREDICATE_LIMIT = 200;
+
+  ... 400 lines later
+
+  if (literals.size() > IN_PREDICATE_LIMIT) {
+          // skip evaluating the predicate if the number of values is too big
+          return ROWS_MIGHT_MATCH;
+        }
+  ... used never more
+
+
+Obviously we can limit scope of the IN_PREDICATE_LIMIT to just a method variable.
+
+9)
+
+    TableMetadata current = current();
+    this.cherrypickSnapshot = current.snapshot(snapshotId);
+    ValidationException.check(
+        cherrypickSnapshot != null, "Cannot cherry-pick unknown snapshot ID: %s", snapshotId);
+
+    if (cherrypickSnapshot.operation().equals(DataOperations.APPEND)) {
+      .. code inside if which uses current variable
+    }
+    ... code outside if which does not use current
+
+ Move current to if and limit its scope!
+
+10)
+
+// Global variables at the top of the file
+OFFICE_EMAIL = config('OFFICE_EMAIL', default='')
+OFFICE_PASSWORD = config('OFFICE_PASSWORD', default='')
+PUX_EMAIL = config('PUX_EMAIL', default='')
+SUBJECT = config('SUBJECT', default='')
+LEVUS_INFO_EMAIL = config('LEVUS_INFO_EMAIL', default='')
+
+They are all used only in one method, so it can make sense to reduce their scope and declara/initiaize there.
+
+def send_email(message: str):
+    //declare and initialize varialbes
+
+So we clean uo global namespace.
+
+11)
+
+for cargo_email in CARGO_EMAIL:
+    all_email_ids = search('FROM', cargo_email, imap_session)
+    email_id_search_pool = str(all_email_ids[0]).removeprefix("b'").removesuffix("'").split()[::-1]  # [0:16]
+    # Iterating over all emails
+    for email_id in email_id_search_pool:
+
+In python we can use del to delete variables; e.g we can delete all_email_ids which we do not need in the second loop.
+
+ |
+ |
+ v
+
+ for cargo_email in CARGO_EMAIL:
+    all_email_ids = search('FROM', cargo_email, imap_session)
+    email_id_search_pool = str(all_email_ids[0]).removeprefix("b'").removesuffix("'").split()[::-1]  # [0:16]
+    # Iterating over all emails
+    del all_email_ids
+    for email_id in email_id_search_pool:
+
+12)
+
+TESSERACT_PATH = config('TESSERACT_PATH', default='')
+
+pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+
+I do not know what was my motivation by the time I wrote it to do this cunning trick but I believe there was a good
+reason for this...
+
+ |
+ |
+ v
+
+pytesseract.pytesseract.tesseract_cmd = config('TESSERACT_PATH', default='')
+
+13)
+
+    target_hash = bytearray.fromhex(target_hash)
+    if len(proof) == 0:
+        return target_hash == merkle_root
+    else:
+        proof_hash = target_hash
+        for p in proof:
+        ... a lot of code
+
+target_hash is not used anymore so we can delete it before the loop
+
+ |
+ |
+ v
+
+    target_hash = bytearray.fromhex(target_hash)
+    if len(proof) == 0:
+        return target_hash == merkle_root
+    else:
+        proof_hash = target_hash
+        del target_hash
+        for p in proof:
+        ... a lot of code
+
+14)
+
+... a lot of code
+email_body = email_parts[0][1]
+email_body_content = email.message_from_bytes(email_body)
+for part in email_body_content.walk():
+    if valid_label(part):
+... a lot of code
+
+
+email_body is not used further in the loop -> can be deleted
+
+... a lot of code
+email_body = email_parts[0][1]
+email_body_content = email.message_from_bytes(email_body)
+del email_body
+for part in email_body_content.walk():
+    if valid_label(part):
+... a lot of code
+
+15)
+
+@Trace
+@Component
+public class WorkflowExecutor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowExecutor.class);
+    private static final int EXPEDITED_PRIORITY = 10;
+
+.... 1700 lines of code
+
+if (queueDAO.containsMessage(DECIDER_QUEUE, workflowId)) {
+    queueDAO.postpone(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
+} else {
+    queueDAO.push(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
+}
+
+So again we just need a constant in one place but for some reason declare as a class member variable...
+Just move it into the method and it's done.
+
+ |
+ |
+ v
+
+ private void expediteLazyWorkflowEvaluation(String workflowId) {
+    final int EXPEDITED_PRIORITY = 10;
+    if (queueDAO.containsMessage(DECIDER_QUEUE, workflowId)) {
+        queueDAO.postpone(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
+    } else {
+        queueDAO.push(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
+    }
+
+    LOGGER.info("Pushed workflow {} to {} for expedited evaluation", workflowId, DECIDER_QUEUE);
+}
