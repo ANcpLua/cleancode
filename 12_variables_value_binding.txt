@@ -11,10 +11,11 @@
             GROUP BY box
         """
 
-In this case such an early binding was chosen by one reason : we needed to perform a specific auery in the database
-and the only thing which had to change there is "table.reference". But due to mysql connector approach in python
-we do not use string templates but just mark a variable we want to dynamically insert with % folowed by its type in mysql
-and it will insert the marked value itself. We must only pass the value in runtime.
+In this case such an early binding was chosen by one reason : we needed to perform a specific query in the database
+and the only thing which had to change was "table.reference". But due to mysql connector approach in python
+we do not use string templates but just mark a variable we want to dynamically insert into the query
+with % folowed by its type in mysql and connector insert the marked value itself.
+We must only pass the value in runtime.
 Thus we end up having a query which is known at code writing time and a variable which holds the query which
 will not further change. And btw it is used only once in program
 So there is no reason to put the query somewhere else rather than just in a variable and bind it
