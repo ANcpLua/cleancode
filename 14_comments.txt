@@ -1,0 +1,176 @@
+3.1
+
+1)
+
+ # Group all items by boxes, compute boxes weights and retrieve in format order_reference - box with number - weight
+ query = """
+          SELECT subquery.reference, SUBSTRING_INDEX(lvscategory_lang.name, '-', 1) as box, SUM(subquery.total_weight) as total_weight
+          FROM lvscategory_lang
+          JOIN (
+                SELECT lvsorders.reference, lvscategory_lang.id_category, lvsproduct.weight * SUM(lvspack.quantity) as total_weight
+                FROM lvsorders 
+                JOIN lvsorder_detail USING(id_order) 
+                JOIN lvspack on lvsorder_detail.product_id = lvspack.id_product_pack 
+                JOIN lvsproduct_lang on lvspack.id_product_item = lvsproduct_lang.id_product 
+                JOIN lvsproduct on lvspack.id_product_item = lvsproduct.id_product 
+                JOIN lvscategory_product on lvspack.id_product_item = lvscategory_product.id_product 
+                JOIN lvscategory_lang on lvscategory_product.id_category = lvscategory_lang.id_category
+                WHERE lvsorders.reference = %s 
+                AND lvsproduct_lang.id_lang = 1 
+                AND lvscategory_lang.id_category in (14,16,17) 
+                AND lvscategory_lang.id_lang = 1
+                GROUP BY lvspack.id_product_item
+            ) as subquery ON lvscategory_lang.id_category = subquery.id_category
+            WHERE lvscategory_lang.id_category in (14,16,17) AND lvscategory_lang.id_lang = 1
+            GROUP BY box
+ 
+ """
+ 
+ Although I wrote this query not so ling time ago, I could not understand what it does from the first glance.
+ And what this substring in select does there... So a short comment here would be okay.
+ 
+ 2)
+ 
+posts = reddit.subreddit(subreddit).hot(limit=limit)
+
+# Use threadpool executor to avoid lazy initialization
+with ThreadPoolExecutor() as executor:
+    results = list(executor.map(create_post_resource, posts))
+    
+This would give more info about why we even want to use ThreadPool executor here. Initially to load 10 posts from reddit
+due to reddit policies and lazy initialization we had to wait 120 seconds for 10 posts. After using executor time
+shortened to 10...
+
+3)
+
+if ! crontab -l | grep "$job"; then
+  // every working day at 8:00
+  (crontab -l; echo "0 8 * * 1-5 $job") | crontab -
+fi
+
+I think for cron expressions we MUST provide a comment. That's it.
+
+4)
+
+pyinstaller --onefile ^
+            --distpath "%project_path%" ^
+            --add-data ".env;.env" ^
+            // Build tool does not take dependepcies automatically
+            --paths "%project_path%\venv\Lib\site-packages" ^
+            tracker.py
+            
+Good to know why we add hardcoded folder where python dependecies are stored. I remembered after searching on stackoverflow...
+
+
+5)
+
+// use rsync for copying files as resources directory may already exist on server
+rsync -av --ignore-missing-args resources/ $DEPLOY_PATH/resources/
+
+Without hint I won't remember why I used rsync
+
+6)
+
+next := func(cur int) int {
+    // modulo twice to make sure we have positive numbers
+	return ((cur+nums[cur])%n + n) % n
+}
+
+In go modulo negative numbers does not return positive like on math lessons.
+
+7)
+
+if word[start] != word[end] {
+    // CARABC could be a valid palindrome if we delete start pointer letter and CBARAC if we delete end
+    return IsPalindrome(word[start:end]) || IsPalindrome(word[start+1:end+1])
+}
+
+Good comment as now I would immediately understand what approach I used while solving possible palindrome.
+
+3.2
+
+1)
+
+# this is done to make SSL connection with GMAIL
+imap_session = imaplib.IMAP4_SSL("imap.gmail.com")
+# logging the user in
+imap_session.login(OFFICE_EMAIL, OFFICE_PASSWORD)
+ 
+  |
+  |
+  v
+  
+imap_session = imaplib.IMAP4_SSL("imap.gmail.com")
+imap_session.login(OFFICE_EMAIL, OFFICE_PASSWORD)
+ 
+Just code pollution, no need for comments at all.
+
+2)
+
+// Logged in as admin and trying to access a page that is not allowed
+if (isset($_SESSION['admin_email']) and !in_array("admin", $url))
+
+  |
+  |
+  v
+  
+private function isDeniedForAdmin(){..}
+...
+if (isDeniedForAdmin) {...}
+
+I have 5 if statements with similar commnets, so simply introducing short boolean methods would remove need for
+these comments.
+
+3)
+
+ # Execute a query for each order,fetch its weight and add it order and weight to a dictionary
+results = {}
+for order in orders:
+    cursor.execute(query, (order.reference,))
+    results.__setitem__(order, cursor.fetchall())
+    
+  |
+  |
+  v
+  
+orders_with_boxes_weights = {}
+for order in orders:
+    cursor.execute(boxes_weights_query, (order.reference,))
+    orders_with_boxes_weights.__setitem__(order, cursor.fetchall())
+
+Now there is no need for a comment as we explicitly know that our query retrieves boxes weights for a certain order
+and resulting dict stores weights associated with an order.
+
+4)
+
+# Read the CSV data
+csv_path = './resources/current_stock.csv'
+data = pd.read_csv(csv_path)
+
+  |
+  |
+  v
+  
+csv_path = './resources/current_stock.csv'
+data = pd.read_csv(csv_path)
+
+Just useless comment.
+
+5)
+
+// If last node, don't print comma
+if (node == path.back()) {
+    std::cout << " " << node;
+    break;
+}
+
+  |
+  |
+  v
+  
+if (node == path.back()) {
+    std::cout << " " << node;
+    break;
+}
+
+Another useless comment, just write in human words what if does...
