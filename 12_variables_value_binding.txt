@@ -1,0 +1,38 @@
+1)
+
+    # Prepare the query
+    query = """
+            SELECT subquery.reference...
+            FROM ...
+            JOIN (
+                ...
+            ) as subquery ...
+            WHERE table.reference = %s 
+            GROUP BY box
+        """
+
+In this case such an early binding was chosen by one reason : we needed to perform a specific auery in the database
+and the only thing which had to change there is "table.reference". But due to mysql connector approach in python
+we do not use string templates but just mark a variable we want to dynamically insert with % folowed by its type in mysql
+and it will insert the marked value itself. We must only pass the value in runtime.
+Thus we end up having a query which is known at code writing time and a variable which holds the query which
+will not further change. And btw it is used only once in program
+So there is no reason to put the query somewhere else rather than just in a variable and bind it
+at code writing time.
+
+2)
+
+pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+
+Tesseract is an OCR engine and I needed it for my small project. So here I used "interpret time binding" because
+I wanted to send it further to the whole team as executable and the only thing the would need to change is the value
+of tesseract path in .env file or more better would be to use just env variables. Then they would not need to rebuild the project
+by initial installation or when they update the engine.
+
+3)
+
+updated, remaining = check_pending_orders_updates(orders_client)
+
+In this case this code will be executed in runtime and only under certain circumstances so there is no other way
+how I could bind the value here. As we will whether some pending orders got updated if file with them exists.
+So it makes the code more flexible but I need to pay more attention to some details...
