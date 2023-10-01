@@ -1,0 +1,181 @@
+1)
+
+//Finds the shortest path between two stations using the Dijkstra algorithm
+std::pair<std::deque<std::pair<std::string, std::string>>, int> find_path_dijkstra(const Graph &graph, const std::string &start, const std::string &end)
+
+Noise - function name already says that we use dijkstra algorithm for finding the shortest path -> delete comment.
+
+2)
+
+/***                                  ***  MAIN   ***                                                              ***/
+int main(int argc, char *argv[])
+
+Positional markers - here this marker does not bring any value. Something like a noise -> delete.
+
+3)
+
+# If there are no images in preview, return an empty list
+images=get_image_from_submission(submission),
+
+Not local info - weird comment as even if we would want to add such a comment, the best place to do it is the function itself.
+For now it refers not to the local info but to the function's info -> delete(it doesn't even make sense to change somehow this
+comment as in the function one can see "if" followed by else returning empty list.
+
+4)
+
+#Sort by date
+results.sort(key=lambda x: x["date"], reverse=True)
+
+Noise - juse delete.
+
+5)
+
+def __count_orders(self) -> int:
+        """
+        Counts the number of orders available in the shop.
+        :return: int
+        :raises: OrdersNotFound
+        """
+        orders_list = _get_resource_as_dict(self.__session, "{}/orders".format(self.__shop_api_url), "orders").get(
+            'order')
+        if orders_list:
+            return len(orders_list)
+        else:
+            raise OrdersNotFound("No orders found! Add some to your shop.")
+
+Redundant comments - comment is 1 line less as the code itself... Delete!
+
+6)
+
+/*
+import { addAppointmentButton } from './constants.js';
+import { addAppointment } from './appointment.mjs';
+
+addAppointmentButton.addEventListener('click', addAppointment);
+*/
+
+
+import {backButton, form} from "./constants.js";
+import {addAppointment, displayAppointments} from "./appointments.mjs";
+
+Commented out code - I even do not know we I left it there. Anyway -> delete.
+
+7)
+
+    /**
+     * Returns appointments sorted by expiration date.
+     * @return Collection
+     */
+    public function getAllAppointments(): Collection
+    {
+        // Return appointments sorted by expiration date
+        return Appointment::orderBy('expiration_date', 'asc')->get();
+    }
+    
+I think this is the winner. Double noise -> finish him. Delete both of the comments.
+
+8)
+
+//  Reads the graph from the file
+Graph graph = read_file(filename_graph);
+
+Again noise. Delete it.
+
+10)
+
+$range = ($max - $min);
+
+if ($range < 0) {
+    // Not so random...
+    return $min;
+}
+
+$log = log($range, 2);
+
+// Length in bytes.
+$bytes = (int) ($log / 8) + 1;
+
+Use variable name - actually here we can omit this noise comment by renaming the variable :
+
+$rangeBytesLength = (int) ($log / 8) + 1;
+
+11)
+
+/**
+     * Returns appointments sorted by expiration date.
+     * @return Collection
+*/
+public function getAllAppointments(): Collection
+....
+/**
+     * Get certain appointment by id.
+     * @throws AppointmentNotFoundException
+*/
+public function getAppointmentById(int $id): ?Appointment
+...
+/**
+     * Delete certain appointment by id.
+     * @throws AppointmentNotDeletedException
+     * @throws AppointmentNotFoundException
+*/
+public function deleteAppointment(int $id): void
+...
+
+
+Mandatory comments - while actually being redundant these comments populaten our whole project. These mandatory comments
+were forced by our teachers... Delete them all!
+
+12)
+
+#Navigate to project directory
+cd $DEPLOY_PATH
+
+#Make pux_job.sh executable
+chmod +x pux_job.sh
+
+#Update dependencies
+source venv/bin/activate
+pip install -r requirements.txt
+
+Noise - another noise found.
+
+13)
+
+# Check if job is already scheduled
+job="/bin/bash $DEPLOY_PATH/pux_job.sh 2>> $DEPLOY_PATH/logs/pux_button_error.log"
+if ! crontab -l | grep "$job"; then
+
+Not obvious comment - apart from being a noise this is a quite confusing comment - when I looked at this comment now
+I started searching some if expressions in job variable. But job variable just stores the job description.
+So it could make more sense to shift this comment down to if. But ideally I would remove it...
+
+14)
+
+/**
+ * Extends short database image path with full path to image.
+ * @param string $path
+ * @return string
+ */
+function bakeBlogImagePath(string $path): string {
+	return URL_ROOT . "/public/img/blog/" . $path;
+}
+
+ |
+ |
+ v
+
+function mapToAbsoluteImagePath(string $relativeImagePath) : string {
+    return URL_ROOT . "/public/img/blog/" . $path;
+}
+
+Use method name - simply renaming the function removes the need for this huge comment.
+
+15)
+
+// New width and height of thumbnail
+$thumbWidth = 720;
+$thumbHeight = 480;
+
+Misleading info - actually this is a wrong comment, because it is not a new height and width of a thumbnail,but just a
+thumbnail height and width. New was a signal for me that we create a new thumbnail, but actually we do not.
+We just create a thumbnail from an image. This new is a trap...
