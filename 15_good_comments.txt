@@ -1,0 +1,128 @@
+1)
+
+def is_customers_label(order: Order, text: str) -> bool:
+    # If we find in the label text more that 3 order values like first_name, address, post code then this is
+    # the order's label
+    return sum(list(map(lambda value: 1 if text.find(str(value)) != -1 else 0, order._asdict().values()))) > 3
+
+Informational/Clarifying comment - pretty long expressiona and it is unclear why do we map and what do we sum
+
+2)
+
+// Second parameter is DPI(quality resolution of image)
+converted_pdf = convert_from_path(file_name, 500, poppler_path=POPPLER_PATH).pop(0)
+
+Clarifying comment - magic 500 should be cleared. But introducing a DPI_RESOLUTION constant could also be an option...
+
+3)
+
+for email_id in email_id_search_pool:
+    // use this format to obtain attachments as well
+    EMAIL_FORMAT = '(RFC822)'
+    typ, email_parts = imap_session.fetch(email_id, EMAIL_FORMAT)
+    email_body = email_parts[0][1]
+    
+Informational comment - providing more context why we use this standard and not the default one is helpful.
+
+4)
+
+try:
+    # If state is not set(there will be '0' in the state field -> accessing it will produce TypeError)
+    state_details = _get_resource_as_dict(self.session, address_data['id_state']['@xlink:href'], "state")
+except TypeError:
+    state_data = {}
+    
+Emphasize - here we explicitly mention why try get is used and why it is important.
+
+5)
+
+def is_url_submission(submission: Submission) -> bool:
+    # Selftext field is somehow not stable : sometimes blank, sometimes " ", strip it to be sure.
+    return len(str(submission.selftext).strip()) == 0 and \
+        not (is_image_submission(submission) or is_video_submission(submission)) \
+        and submission.url.startswith("http")
+
+Informational/Clarifying comment - pretty straightforward.
+
+6)
+
+// Put 2 times cause they apth from/to each node is a different path
+graph[station1].push_back({station2, time, line_name});
+graph[station2].push_back({station1, time, line_name});
+
+Emphasize - when solving this graph task I could not understand what went wrong and the error was
+exactly in this part.
+
+7)
+
+// TODO: Optimize and refactor renderAppointment
+const {title, location, description, expiration_date, appointmentDates, votes, comments, id} = appointmentData;
+
+renderAppointmentHeader(title, location, description, expiration_date, id);
+renderDateHeaders(appointmentDates);
+renderUserRows(votes, appointmentDates);
+if (new Date(expiration_date) >= new Date()) renderForm(appointmentDates);
+renderComments(comments);
+
+addSubmitEvent();
+
+TODO comment - currently appointments are rendered in a weird manner. The initial approach choice was wrong.
+So a good TODO will remind us of our bad choice...
+
+8)
+
+# Ensure they are set in .env file and are correct
+smtp.login(OFFICE_EMAIL, OFFICE_PASSWORD)
+
+Warning - it was a trap even for me. Several times I either forgot to check the env file
+or my chef decided to change the password...
+
+9)
+
+def is_image_submission(submission: Submission) -> bool:
+    # TODO - research and find all domains where reddit stores images
+    image_domains = ['i.redd.it', 'imgur.com']
+    return any(domain in submission.url for domain in image_domains)
+
+TODO comment - every submission in reddit may have images. But not all submissions are image submissions - with image header.
+I remember that I founf not all domains where images from headers are stored. Good todo.
+
+10)
+
+return Vote::join('appointment_dates', 'votes.appointment_date_id', '=', 'appointment_dates.id')
+                ->where('appointment_dates.appointment_id', $appointmentId)
+                ->select('votes.*')
+                ->get()
+                // group by user so that frontend can show who has which votes
+                ->groupBy('user_name')
+                ->sortBy(function ($vote, $userName) {
+                    return $userName;
+                })
+                ->toArray();
+                
+Informational comment - good tipp why would we want to group votes by user names when returning all votes.
+
+11)
+
+$appointment = new Appointment([
+                'title' => $data['title'],
+                'location' => $data['location'],
+                'description' => $data['description'],
+                // Use carbon to bring to format "in 2 days" or "tomorrow"
+                'expiration_date' => Carbon::parse($data['expiration_date']),
+            ]);
+
+Clarifying - there is definitely a need to point out why we use a 3rd party library for date formatting
+
+12)
+
+std::deque<std::pair<std::string, std::string>> path;
+// choose end because we compose the final path using previous_lines map -> we go from end to start
+std::string current_node = end;
+while (!previous_nodes[current_node].empty()) {
+    path.emplace_front(current_node, previous_lines[current_node]);
+    current_node = previous_nodes[current_node];
+}
+
+Informational - I think it is a good hint why we fill our path from end and not from start.
+
